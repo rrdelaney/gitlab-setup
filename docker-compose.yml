@@ -1,0 +1,28 @@
+version: '2'
+
+services:
+  web:
+    image: gitlab/gitlab-ce:latest
+    hostname: code.$BASE_URL
+    restart: always
+    environment:
+    GITLAB_OMNIBUS_CONFIG: |
+      external_url: 'code.$BASE_URL'
+      mattermost_external_url 'chat.$BASE_URL'
+      registry_external_url 'registry.$BASE_URL'
+      nginx['redirect_http_to_https'] = true
+      mattermost_nginx['redirect_http_to_https'] = true
+      mattermost_nginx['ssl_certificate'] = "/etc/gitlab/ssl/chat.$BASE_URL.crt"
+      mattermost_nginx['ssl_certificate_key'] = "/etc/gitlab/ssl/chat.$BASE_URL.key"
+      mattermost['service_use_ssl'] = true
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - '/srv/gitlab/config:/etc/gitlab'
+      - '/srv/gitlab/logs:/var/log/gitlab'
+      - '/srv/gitlab/data:/var/opt/gitlab'
+  runner:
+    image: gitlab/gitlab-runner:latest
+    restart: always
+    privileged: true
